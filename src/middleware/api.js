@@ -15,13 +15,20 @@ const API_ROOT = 'https://appsheettest1.azurewebsites.net/sample/';
  * @return Observable
  */
 export function call(...reqs) {
-  const uris = []
-    .concat
-    // Flatten arguments
-    .apply([], reqs)
-    // Create observables for each argument
-    .map(endpoint => fetch(`${API_ROOT}${endpoint}`)
-      .catch(err => Observable.of({})) // Resume execution on error
-    );
-  return Observable.forkJoin(uris);
+  // Flatten arguments
+  const uris = [].concat.apply([], reqs);
+
+  // Create observables for each argument
+  return Observable.forkJoin(
+    uris.map(endpoint => {
+      const req = fetch(`${API_ROOT}${endpoint}`);
+
+      // Stop execution and show error for single request
+      if (uris.length < 2) return req;
+
+      // Resume execution on error for concurrect requests
+      return fetch(`${API_ROOT}${endpoint}`)
+        .catch(err => Observable.of({}));
+    })
+  );
 }
