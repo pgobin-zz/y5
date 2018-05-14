@@ -32,8 +32,6 @@ export const loadUsers = nextToken => dispatch => {
   const queryString = nextToken ? `?token=${nextToken}` : '';
   call(`list${queryString}`).subscribe(
     res => dispatch(fetchUsers(res[0].result, res[0].token)),
-    err => {
-      return dispatch({ type: FETCH_FAILURE, error: err.message })
-    }
+    err => dispatch({ type: FETCH_FAILURE, error: err.message })
   );
 };

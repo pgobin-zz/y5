@@ -18,8 +18,8 @@ export function call(...reqs) {
   // Flatten arguments
   const uris = [].concat.apply([], reqs);
 
-  // Create observables for each argument
   return Observable.forkJoin(
+    // Create observables for each argument
     uris.map(endpoint => {
       const req = fetch(`${API_ROOT}${endpoint}`);
 
