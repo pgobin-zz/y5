@@ -18,17 +18,13 @@ export function call(...reqs) {
   // Flatten arguments
   const uris = [].concat.apply([], reqs);
 
-  return Observable.forkJoin(
-    // Create observables for each argument
-    uris.map(endpoint => {
-      const req = fetch(`${API_ROOT}${endpoint}`);
+  // Create observables for each argument, halting execution
+  // for single requests and resuming for concurrent requests
+  const join = uris.map(endpoint => {
+    const req = fetch(`${API_ROOT}${endpoint}`);
+    if (uris.length < 2) return req;
+    return req.catch(err => Observable.of({}));
+  });
 
-      // Stop execution and show error for single request
-      if (uris.length < 2) return req;
-
-      // Resume execution on error for concurrect requests
-      return fetch(`${API_ROOT}${endpoint}`)
-        .catch(err => Observable.of({}));
-    })
-  );
+  return Observable.forkJoin(join);
 }
